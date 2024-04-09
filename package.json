@@ -1,0 +1,24 @@
+{
+  "name": "backup-db",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "pm2 start src/server.js --name hryordamchi_backup",
+    "restart": "pm2 restart hryordamchi_backup",
+    "delete": "pm2 delete hryordamchi_backup",
+    "start:dev": "nodemon src/server"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "archiver": "^6.0.1",
+    "dotenv": "^16.3.1",
+    "express": "^4.19.2",
+    "node-cron": "^3.0.2",
+    "node-telegram-bot-api": "^0.65.1",
+    "nodemon": "^3.0.1",
+    "pm2": "^5.3.0"
+  }
+}
