@@ -1,1 +1,4 @@
 /node_modules
+/backups
+./.env
+.package-lock.json
