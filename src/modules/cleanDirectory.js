@@ -1,7 +1,8 @@
 const cron = require('node-cron');
-const fs = require('fs')
+const path = require('path');
+const fs = require('fs');
 
-const directoryPath = process.cwd();
+const directoryPath = path.join(process.cwd(), '/backups');
 
 function cleanDirectory() {
     cron.schedule('0 0 * * 0', async () => {
