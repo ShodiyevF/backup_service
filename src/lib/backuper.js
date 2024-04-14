@@ -29,6 +29,7 @@ async function backuper(db, bot) {
         })
         dbStatUpdate(db.db_name, dbStat.data.insert, dbStat.data.update, dbStat.data.delete, sendedBackupResponse.document.file_id)
         fs.rmSync('./backups/'+file_name)
+        fs.rmSync(compressesDB)
     
     } catch (error) {
         console.log(error);
