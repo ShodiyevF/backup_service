@@ -10,41 +10,62 @@ function dbStatInitFile() {
         if (checkFile) {
             return ''
         }
-
-        return fs.writeFileSync(filePath, JSON.stringify({
-            insert: 0,
-            update: 0,
-            delete: 0,
-            old_db_file_id: 0
-        }, null, 4))
+        
+        return fs.writeFileSync(filePath, JSON.stringify([]))
     } catch (error) {
         console.log(error);
     }
 }
 
-async function dbStatUpdate(inserted, updated, deleted, fileId) {
+async function dbStatUpdate(db, inserted, updated, deleted, fileId) {
     try {
-        return fs.writeFileSync(filePath, JSON.stringify({
+        const readDbStat = fs.readFileSync(filePath)
+        const parseDbStat = JSON.parse(readDbStat)
+        
+        const searchDbStat = parseDbStat.find(data => data.db === db)
+        if (!searchDbStat) {
+            parseDbStat.push({
+                db: db,
+                insert: inserted,
+                update: updated,
+                delete: deleted,
+                old_db_file_id: fileId
+            })
+            return fs.writeFileSync(filePath, JSON.stringify(parseDbStat, null, 4))
+        }
+
+        const indexOfDb = parseDbStat.indexOf(searchDbStat)
+        parseDbStat.splice(indexOfDb === 0 ? 0 : indexOfDb, 1)
+        parseDbStat.push({
+            db: db,
             insert: inserted,
             update: updated,
             delete: deleted,
             old_db_file_id: fileId
-        }, null, 4))
+        })
+        
+        return fs.writeFileSync(filePath, JSON.stringify(parseDbStat, null, 4))
     } catch (error) {
         console.log(error);
     }
 }
 
-async function dbStatCheck() {
+async function dbStatCheck(db) {
     try {
         const getOldStat = fs.readFileSync(filePath)
         const parseGetOldStat = await JSON.parse(getOldStat)
-        const getLatestStat = await fetchPsql('select tup_inserted, tup_updated, tup_deleted from pg_stat_database where datname = $1', process.env.DB_NAME).then(data => data[0])
+        const getLatestStat = await fetchPsql('select tup_inserted, tup_updated, tup_deleted from pg_stat_database where datname = $1', db).then(data => data[0])
 
+        const searchDbStat = parseGetOldStat.find(data => data.db === db)
+
+        if (!searchDbStat) {
+            dbStatUpdate(db, 0, 0, 0, 0)
+        }
+        
         if (
-            parseGetOldStat.insert != getLatestStat.tup_inserted || 
-            parseGetOldStat.update != getLatestStat.tup_updated || 
-            parseGetOldStat.delete != getLatestStat.tup_deleted
+            searchDbStat.insert != getLatestStat.tup_inserted || 
+            searchDbStat.update != getLatestStat.tup_updated || 
+            searchDbStat.delete != getLatestStat.tup_deleted
         ) {
             return {
                 status: "modificated",
@@ -52,14 +73,14 @@ async function dbStatCheck() {
                     insert: getLatestStat.tup_inserted,
                     update: getLatestStat.tup_updated,
                     delete: getLatestStat.tup_deleted,
-                    old_db_file_id: parseGetOldStat.old_db_file_id
+                    old_db_file_id: searchDbStat.old_db_file_id
                 }
             }
         }
-
+        
         return {
             status: "unmodificated",
-            data: parseGetOldStat
+            data: searchDbStat
         }
     } catch (error) {
         console.log(error);
