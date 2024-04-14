@@ -1,5 +1,6 @@
 /node_modules
 /backups
+/zip
 .env
 package-lock.json
 db_stat.json
