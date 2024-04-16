@@ -1,4 +1,3 @@
-const { fetchPsql } = require('../lib/pg')
 const path = require('path')
 const fs = require('fs')
 
@@ -50,11 +49,11 @@ async function dbStatUpdate(db, inserted, updated, deleted, fileId) {
     }
 }
 
-async function dbStatCheck(db) {
+async function dbStatCheck(db, psql) {
     try {
         const getOldStat = fs.readFileSync(filePath)
         const parseGetOldStat = await JSON.parse(getOldStat)
-        const getLatestStat = await fetchPsql('select tup_inserted, tup_updated, tup_deleted from pg_stat_database where datname = $1', db).then(data => data[0])
+        const getLatestStat = await psql('select tup_inserted, tup_updated, tup_deleted from pg_stat_database where datname = $1', db).then(data => data[0])
 
         const searchDbStat = parseGetOldStat.find(data => data.db === db)
 
