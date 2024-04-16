@@ -6,9 +6,9 @@ const fs = require('fs')
 
 const chatId = process.env.group_id
 
-async function backuper(db, bot) {
+async function backuper(db, bot, psql) {
     try {
-        const dbStat = await dbStatCheck(db.db_name)
+        const dbStat = await dbStatCheck(db.db_name, psql)
 
         if (dbStat.status == 'unmodificated' && dbStat.data.old_db_file_id != 0) {
             await bot.sendMessage(chatId, `<b>${db.db_name.toUpperCase()}</b> databazasida da o'zgarish bo'lmagan!`, {
