@@ -1,4 +1,3 @@
-const { fetchPsql } = require('../lib/pg')
 const path = require('path')
 const fs = require('fs')
 
