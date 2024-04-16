@@ -4,9 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "pm2 start src/server.js --name hryordamchi_backup",
-    "restart": "pm2 restart hryordamchi_backup",
-    "delete": "pm2 delete hryordamchi_backup",
+    "start": "pm2 start src/server.js --name backup_service",
+    "restart": "pm2 restart backup_service",
+    "delete": "pm2 delete backup_service",
     "start:dev": "nodemon src/server"
   },
   "keywords": [],
