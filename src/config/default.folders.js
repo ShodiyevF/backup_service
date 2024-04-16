@@ -3,20 +3,26 @@ const path = require('path')
 const fs = require('fs')
 
 const folderPath = path.join(process.cwd(), '/backups')
+const folderZipPath = path.join(process.cwd(), '/zip')
 
-function uploadsInitFolder() {
+function initFolder(path) {
     try {
-        const checkFolder = fs.existsSync(folderPath)
+        const checkFolder = fs.existsSync(path)
         if (checkFolder) {
             return ''
         }
 
-        return fs.mkdirSync(folderPath)
+        return fs.mkdirSync(path)
     } catch (error) {
         console.log(error);
     }
 }
 
+function initializeFolder() {
+    initFolder(folderPath)
+    initFolder(folderZipPath)
+}
+
 module.exports = {
-    uploadsInitFolder
+    initializeFolder
 }
