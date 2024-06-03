@@ -6,7 +6,7 @@ const fs = require('fs')
 
 const chatId = process.env.group_id
 
-async function backuper(db, bot, psql) {
+async function backuper(db, bot, psql, isFile = true) {
     try {
         const dbStat = await dbStatCheck(db.db_name, psql)
 
@@ -17,19 +17,31 @@ async function backuper(db, bot, psql) {
             })
             return false
         }
+
+        const checkFile = await fs.existsSync('/home/tgbotapi/backup_service/backups/'+db.srv_username)
+        if (!checkFile) {
+            fs.mkdirSync('/home/tgbotapi/backup_service/backups/'+db.srv_username)
+        }
         
         const file_name = `${db.db_name}_backup.sql`;
-        const command = `PGPASSWORD='${db.db_pasw}' pg_dump -h ${db.db_host} -U ${db.db_user} -d ${db.db_name} -p ${db.db_port} -f './backups/${file_name}'`;
-
+        const command = `PGPASSWORD='${db.db_pasw}' pg_dump -h ${db.db_host} -U ${db.db_user} -d ${db.db_name} -p ${db.db_port} -f './backups/${db.srv_username}/${file_name}'`;
         await execute(command)
-        const compressesDB = await compressDb(file_name);
+        if (isFile) {
+            const commandFile = `scp -r -P ${db.srv_port} -i /home/tgbotapi/.ssh/${db.srv_ssh_key} ${db.srv_username}@${db.srv_host}:${db.srv_upload_folder} /home/tgbotapi/backup_service/backups/${db.srv_username}/`;
+            await execute(commandFile)
+        }
+        
+        const compressesDB = await compressDb(db.srv_username);
         const sendedBackupResponse = await bot.sendDocument(chatId, compressesDB, {
             caption: `<b>${db.db_name}</b> ${formatDate()}`,
             message_thread_id: db.db_topic_id,
             parse_mode: 'HTML'
         })
         dbStatUpdate(db.db_name, dbStat.data.insert, dbStat.data.update, dbStat.data.delete, sendedBackupResponse.document.file_id)
-        fs.rmSync('./backups/'+file_name)
+        fs.rmSync('/home/tgbotapi/backup_service/backups/'+db.srv_username, {
+            force: true,
+            recursive: true
+        })
         fs.rmSync(compressesDB)
     
     } catch (error) {
